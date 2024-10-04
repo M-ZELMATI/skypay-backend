@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: skypay
+  jpa:
+    hibernate:
+      ddl-auto: update
+      ejb:
+        interceptor: org.hibernate.cfg.ImprovedNamingStrategy
+        session_factory:
+          use_native_entity_query: true
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+          time_zone: Africa/Casablanca
+  datasource:
+    url: jdbc:mysql://localhost:3306/skaypay
+    username: root
+    password: tftftf
+    oracleucp:
+      database-name: skaypay
+  main:
+    allow-circular-references: true
+server:
+  port: 8081
+ 
