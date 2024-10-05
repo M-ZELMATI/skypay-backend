@@ -1,0 +1,12 @@
+[
+   {
+      "email":"admin@skypay.com",
+      "password":"admin@skypay",
+      "name":"skypay",
+      "enabled":true,
+      "role":"ADMIN",
+      "accountNumber":"skypay1234567"
+  }
+  ]
+  
+  

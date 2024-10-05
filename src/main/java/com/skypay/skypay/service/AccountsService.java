@@ -2,8 +2,6 @@ package com.skypay.skypay.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.skypay.skypay.exception.JwtException;
 import com.skypay.skypay.model.Account;
 import com.skypay.skypay.repository.AccountsRepo;
+
 import org.springframework.security.core.userdetails.User;
 
 import java.util.ArrayList;
@@ -32,8 +31,6 @@ public class AccountsService implements UserDetailsService {
     @Lazy
     @Autowired
     private PasswordEncoder passwordEncoder;
-    @Autowired
-    private AuthenticationManager authenticationManager;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -48,6 +45,7 @@ public class AccountsService implements UserDetailsService {
     }
 
     public Account creatUser(Account registrationRequest) {
+
         Account ourAccount = new Account();
 
         try {
@@ -56,6 +54,7 @@ public class AccountsService implements UserDetailsService {
             ourAccount.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
             ourAccount.setRole(registrationRequest.getRole());
             ourAccount.setEnabled(registrationRequest.isEnabled());
+            ourAccount.setAccountNumber(registrationRequest.getAccountNumber());
 
             return accountRepo.save(ourAccount);
 
@@ -68,13 +67,10 @@ public class AccountsService implements UserDetailsService {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(signinRequest.getEmail(), signinRequest.getPassword())
-            );
-
+         
             var user = accountRepo.findByEmail(signinRequest.getEmail()).orElseThrow();
             var jwt = jwtUtils.generateToken(user);
-
+            // var jwt ="";
             response.put("code", 200);
             response.put("access_token", jwt);
             response.put("exp", "24Hr");

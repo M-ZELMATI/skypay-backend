@@ -1,7 +1,5 @@
 package com.skypay.skypay.config;
 
-import com.skypay.skypay.service.JWTUtils;
-import com.skypay.skypay.service.OurAccountDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +13,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.skypay.skypay.model.Account;
+import com.skypay.skypay.repository.AccountsRepo;
+import com.skypay.skypay.service.JWTUtils;
+
 import java.io.IOException;
 
 @Component
@@ -23,7 +25,9 @@ public class JWTAuthFIlter extends OncePerRequestFilter {
     @Autowired
     private JWTUtils jwtUtils;
     @Autowired
-    private OurAccountDetailsService ourAccountDetailsService;
+    private AccountsRepo accountsRepo;
+    // @Autowired
+    // private OurUserDetailsService ourUserDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -37,7 +41,7 @@ public class JWTAuthFIlter extends OncePerRequestFilter {
         jwtToken = authHeader.substring(7);
         userEmail = jwtUtils.extractUsername(jwtToken);
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = ourAccountDetailsService.loadUserByUsername(userEmail);
+            Account userDetails = accountsRepo.findByEmail(userEmail).orElseThrow();
 
             if (jwtUtils.isTokenValid(jwtToken, userDetails)) {
                 SecurityContext securityContext = SecurityContextHolder.createEmptyContext();

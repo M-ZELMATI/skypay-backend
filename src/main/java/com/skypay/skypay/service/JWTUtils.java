@@ -2,7 +2,6 @@ package com.skypay.skypay.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +12,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.function.Function;
 
 @Component
@@ -26,10 +26,10 @@ public class JWTUtils {
         this.Key = new SecretKeySpec(keyBytes, "HmacSHA256");
     }
 
-    public String generateToken(UserDetails AccountDetails){
-        Account user = (Account) AccountDetails;
+    public String generateToken(UserDetails userDetails){
+        Account user = (Account) userDetails;
         return Jwts.builder()
-                .subject(AccountDetails.getUsername())
+                .subject(userDetails.getUsername())
                 .claim("id", user.getId()) // adding custom claim
                 .claim("name", user.getName()) // adding custom claim
                 .claim("email", user.getEmail()) // adding custom claim
@@ -40,7 +40,16 @@ public class JWTUtils {
                 .signWith(Key)
                 .compact();
     }
-   
+    public String generateRefreshToken(HashMap<String, Object> claims, UserDetails userDetails){
+        return Jwts.builder()
+                .claims(claims)
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(Key)
+                .compact();
+    }
+
     public String extractUsername(String token){
         return extractClaims(token, Claims::getSubject);
     }
@@ -48,9 +57,9 @@ public class JWTUtils {
         return claimsTFunction.apply(Jwts.parser().verifyWith(Key).build().parseSignedClaims(token).getPayload());
     }
 
-    public boolean isTokenValid(String token, UserDetails AccountDetails){
+    public boolean isTokenValid(String token, Account account){
         final String username = extractUsername(token);
-        return (username.equals(AccountDetails.getUsername()) && !isTokenExpired(token));
+        return (username.equals(account.getEmail()) && !isTokenExpired(token));
     }
     public boolean isTokenExpired(String token){
         return extractClaims(token, Claims::getExpiration).before(new Date());
